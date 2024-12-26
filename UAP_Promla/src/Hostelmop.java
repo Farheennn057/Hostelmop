@@ -20,73 +20,124 @@ public class Hostelmop {
         // Initialize GUI components
         frame = new JFrame("Hotel Booking Application");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(800, 600);
+        frame.setSize(900, 700);
 
-        JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+        JPanel inputPanel = new JPanel(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.insets = new Insets(5, 5, 5, 5);
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+
+        JLabel lblName = new JLabel("Name:");
+        gbc.gridx = 0; gbc.gridy = 0;
+        inputPanel.add(lblName, gbc);
 
         txtName = new JTextField();
-        txtNights = new JTextField();
-        txtDate = new JTextField();
+        gbc.gridx = 1; gbc.gridy = 0; gbc.gridwidth = 2;
+        inputPanel.add(txtName, gbc);
+
+        JLabel lblRoomType = new JLabel("Room Type:");
+        gbc.gridx = 0; gbc.gridy = 1; gbc.gridwidth = 1;
+        inputPanel.add(lblRoomType, gbc);
 
         cmbRoomType = new JComboBox<>(roomTypes);
         cmbRoomType.addActionListener(e -> updateRoomImage());
+        gbc.gridx = 1; gbc.gridy = 1; gbc.gridwidth = 2;
+        inputPanel.add(cmbRoomType, gbc);
+
+        JLabel lblNights = new JLabel("Number of Nights:");
+        gbc.gridx = 0; gbc.gridy = 2;
+        inputPanel.add(lblNights, gbc);
+
+        txtNights = new JTextField();
+        gbc.gridx = 1; gbc.gridy = 2; gbc.gridwidth = 2;
+        inputPanel.add(txtNights, gbc);
+
+        JLabel lblDate = new JLabel("Check-In Date (yyyy-mm-dd):");
+        gbc.gridx = 0; gbc.gridy = 3;
+        inputPanel.add(lblDate, gbc);
+
+        txtDate = new JTextField();
+        gbc.gridx = 1; gbc.gridy = 3; gbc.gridwidth = 2;
+        inputPanel.add(txtDate, gbc);
+
+        JLabel lblImage = new JLabel("Room Image:");
+        gbc.gridx = 0; gbc.gridy = 4;
+        inputPanel.add(lblImage, gbc);
 
         imgLabel = new JLabel();
         imgLabel.setHorizontalAlignment(SwingConstants.CENTER);
         imgLabel.setBorder(BorderFactory.createLineBorder(Color.BLACK));
+        imgLabel.setPreferredSize(new Dimension(200, 150));
         updateRoomImage();
+        gbc.gridx = 1; gbc.gridy = 4; gbc.gridwidth = 2;
+        inputPanel.add(imgLabel, gbc);
 
         lblTotalCost = new JLabel("Total Cost: Rp 0", SwingConstants.CENTER);
+        lblTotalCost.setFont(new Font("Arial", Font.BOLD, 14));
+        gbc.gridx = 0; gbc.gridy = 5; gbc.gridwidth = 3;
+        inputPanel.add(lblTotalCost, gbc);
 
         JButton btnAdd = new JButton("Add Booking");
         btnAdd.addActionListener(e -> addBooking());
+        gbc.gridx = 0; gbc.gridy = 6; gbc.gridwidth = 1;
+        inputPanel.add(btnAdd, gbc);
 
         JButton btnDelete = new JButton("Delete Booking");
         btnDelete.addActionListener(e -> deleteBooking());
+        gbc.gridx = 1; gbc.gridy = 6;
+        inputPanel.add(btnDelete, gbc);
 
         JButton btnExport = new JButton("Export to CSV");
         btnExport.addActionListener(e -> exportToCSV());
+        gbc.gridx = 0; gbc.gridy = 7; gbc.gridwidth = 1;
+        inputPanel.add(btnExport, gbc);
 
         JButton btnImport = new JButton("Import from CSV");
         btnImport.addActionListener(e -> importFromCSV());
-
-        // Add input components to the panel
-        panel.add(new JLabel("Name:"));
-        panel.add(txtName);
-        panel.add(new JLabel("Room Type:"));
-        panel.add(cmbRoomType);
-        panel.add(new JLabel("Number of Nights:"));
-        panel.add(txtNights);
-        panel.add(new JLabel("Check-In Date (yyyy-mm-dd):"));
-        panel.add(txtDate);
-        panel.add(new JLabel("Room Image:"));
-        panel.add(imgLabel);
-        panel.add(lblTotalCost);
-        panel.add(btnAdd);
+        gbc.gridx = 1; gbc.gridy = 7;
+        inputPanel.add(btnImport, gbc);
 
         // Table for bookings
         tableModel = new DefaultTableModel(new Object[]{"Name", "Room Type", "Nights", "Check-In Date", "Total Cost"}, 0);
         bookingTable = new JTable(tableModel);
         JScrollPane scrollPane = new JScrollPane(bookingTable);
 
-        JPanel btnPanel = new JPanel();
-        btnPanel.add(btnDelete);
-        btnPanel.add(btnExport);
-        btnPanel.add(btnImport);
-
-        // Add components to the frame
-        frame.add(panel, BorderLayout.NORTH);
-        frame.add(scrollPane, BorderLayout.CENTER);
-        frame.add(btnPanel, BorderLayout.SOUTH);
+        // Split frame layout
+        JSplitPane splitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, inputPanel, scrollPane);
+        splitPane.setDividerLocation(350);
+        frame.add(splitPane);
 
         frame.setVisible(true);
     }
 
     private void updateRoomImage() {
-        int selectedIndex = cmbRoomType.getSelectedIndex();
-        String imagePath = "src/images/" + roomTypes[selectedIndex].toLowerCase() + ".jpg"; // Update with actual path
-        ImageIcon imageIcon = new ImageIcon(imagePath);
-        imgLabel.setIcon(new ImageIcon(imageIcon.getImage().getScaledInstance(100, 100, Image.SCALE_SMOOTH)));
+        String imagePath;
+        switch (cmbRoomType.getSelectedItem().toString()) {
+            case "Standard":
+                imagePath = "C:/Users/ACER/Downloads/standard.jpeg";
+                break;
+            case "Deluxe":
+                imagePath = "C:/Users/ACER/Downloads/deluxe.jpeg";
+                break;
+            case "Suite":
+                imagePath = "C:/Users/ACER/Downloads/suite.jpeg";
+                break;
+            default:
+                imgLabel.setText("Image not available");
+                imgLabel.setIcon(null);
+                return;
+        }
+
+        try {
+            ImageIcon imageIcon = new ImageIcon(imagePath);
+            if (imageIcon.getImageLoadStatus() != MediaTracker.COMPLETE) {
+                throw new FileNotFoundException("Image not found: " + imagePath);
+            }
+            imgLabel.setIcon(new ImageIcon(imageIcon.getImage().getScaledInstance(200, 150, Image.SCALE_SMOOTH)));
+        } catch (Exception e) {
+            imgLabel.setText("Image not available");
+            imgLabel.setIcon(null);
+        }
     }
 
     private void addBooking() {
@@ -151,7 +202,7 @@ public class Hostelmop {
     private void importFromCSV() {
         try (BufferedReader reader = new BufferedReader(new FileReader("bookings.csv"))) {
             String line;
-            tableModel.setRowCount(0); // Clear existing data
+            tableModel.setRowCount(0);
             while ((line = reader.readLine()) != null) {
                 tableModel.addRow(line.split(","));
             }
